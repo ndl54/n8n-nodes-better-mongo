@@ -33,14 +33,14 @@ import { generatePairedItemData } from '../../utils/utilities';
 
 export class MongoDb implements INodeType {
 	description: INodeTypeDescription = {
-		displayName: 'MongoDB',
+		displayName: 'Better MongoDB',
 		name: 'mongoDb',
 		icon: 'file:mongodb.svg',
 		group: ['input'],
-		version: [1, 1.1],
-		description: 'Find, insert and update documents in MongoDB',
+		version: [1, 2.0],
+		description: 'Better MongoDB node version 1.0-NDL54 (Latest)',
 		defaults: {
-			name: 'MongoDB',
+			name: 'Better MongoDB',
 		},
 		inputs: ['main'],
 		outputs: ['main'],
