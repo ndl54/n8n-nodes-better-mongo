@@ -146,8 +146,9 @@ export function stringifyObjectIDs(items: INodeExecutionData[]) {
 	return items;
 }
 
+// Deeply parse EJSON for all nested objects/arrays
 export function parseJsonToEjson(query: unknown) {
-		return EJSON.parse(JSON.stringify(query)) as Record<string, unknown>
+	return EJSON.parse(JSON.stringify(query)); // EJSON will handle all nested $date, $oid, etc.
 }
 
 export async function connectMongoClient(connectionString: string, credentials: IDataObject = {}) {
