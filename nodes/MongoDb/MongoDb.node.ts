@@ -260,9 +260,11 @@ export class MongoDb implements INodeType {
 						delete item._id;
 					}
 
+					// Parse EJSON cho item trước khi replace
+					const parsedItem = parseJsonToEjson(item);
 					await mdb
 						.collection(this.getNodeParameter('collection', 0) as string)
-						.findOneAndReplace(filter, item, updateOptions as FindOneAndReplaceOptions);
+						.findOneAndReplace(filter, parsedItem, updateOptions as FindOneAndReplaceOptions);
 				} catch (error) {
 					if (this.continueOnFail()) {
 						item.json = { error: (error as JsonObject).message };
@@ -302,9 +304,11 @@ export class MongoDb implements INodeType {
 						delete item._id;
 					}
 
+					// Parse EJSON cho item trước khi update
+					const parsedItem = parseJsonToEjson(item);
 					await mdb
 						.collection(this.getNodeParameter('collection', 0) as string)
-						.findOneAndUpdate(filter, { $set: item }, updateOptions as FindOneAndUpdateOptions);
+						.findOneAndUpdate(filter, { $set: parsedItem }, updateOptions as FindOneAndUpdateOptions);
 				} catch (error) {
 					if (this.continueOnFail()) {
 						item.json = { error: (error as JsonObject).message };
@@ -333,9 +337,12 @@ export class MongoDb implements INodeType {
 
 				const insertItems = prepareItems(items, fields, '', useDotNotation, dateFields);
 
+				// Parse EJSON cho toàn bộ object đầu vào
+				const parsedInsertItems = insertItems.map(item => parseJsonToEjson(item));
+
 				const { insertedIds } = await mdb
 					.collection(this.getNodeParameter('collection', 0) as string)
-					.insertMany(insertItems);
+					.insertMany(parsedInsertItems);
 
 				// Add the id to the data
 				for (const i of Object.keys(insertedIds)) {
@@ -382,9 +389,11 @@ export class MongoDb implements INodeType {
 						delete item._id;
 					}
 
+					// Parse EJSON cho item trước khi update
+					const parsedItem = parseJsonToEjson(item);
 					await mdb
 						.collection(this.getNodeParameter('collection', 0) as string)
-						.updateOne(filter, { $set: item }, updateOptions as UpdateOptions);
+						.updateOne(filter, { $set: parsedItem }, updateOptions as UpdateOptions);
 				} catch (error) {
 					if (this.continueOnFail()) {
 						item.json = { error: (error as JsonObject).message };
