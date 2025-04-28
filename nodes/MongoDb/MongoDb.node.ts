@@ -46,7 +46,7 @@ export class MongoDb implements INodeType {
 		outputs: ['main'],
 		credentials: [
 			{
-				name: 'betterMongoDB',
+				name: 'mongoDb',
 				required: true,
 				testedBy: 'mongoDbCredentialTest',
 			},
