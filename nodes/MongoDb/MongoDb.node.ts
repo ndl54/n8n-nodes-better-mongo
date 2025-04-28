@@ -37,7 +37,7 @@ export class MongoDb implements INodeType {
 		name: 'mongoDb',
 		icon: 'file:mongodb.svg',
 		group: ['input'],
-		version: [1, 2.0],
+		version: [2, 2.0],
 		description: 'Better MongoDB node version 1.0-NDL54 (Latest)',
 		defaults: {
 			name: 'Better MongoDB',
@@ -46,7 +46,7 @@ export class MongoDb implements INodeType {
 		outputs: ['main'],
 		credentials: [
 			{
-				name: 'mongoDb',
+				name: 'mongoDB',
 				required: true,
 				testedBy: 'mongoDbCredentialTest',
 			},
