@@ -34,11 +34,11 @@ import { generatePairedItemData } from '../../utils/utilities';
 export class MongoDb implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Better MongoDB',
-		name: 'mongoDb',
+		name: 'betterMongoDB',
 		icon: 'file:mongodb.svg',
 		group: ['input'],
 		version: [2, 2.0],
-		description: 'Better MongoDB node version 1.0-NDL54 (Latest)',
+		description: 'Better MongoDB node version 2.0 by NDL54',
 		defaults: {
 			name: 'Better MongoDB',
 		},
@@ -46,7 +46,7 @@ export class MongoDb implements INodeType {
 		outputs: ['main'],
 		credentials: [
 			{
-				name: 'mongoDB',
+				name: 'mongoDb',
 				required: true,
 				testedBy: 'mongoDbCredentialTest',
 			},
