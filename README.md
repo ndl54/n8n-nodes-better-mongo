@@ -60,7 +60,7 @@ Will be sent to MongoDB as:
 ## Changelog
 
 - v1.0: N8N mongo node with same official mongodb node, but using BSON instead of JSON for parsing queries. It accepts $oid and $date and parse them to ObjectId and Date objects respectively.
-- v2.0: Major refactor, improved type handling, robust date/array processing, new credential type, enhanced logging.
+- v2.0: Major refactor, improved type handling, robust date/array processing, new credential type.
 
 ## Author
 - Juandl (Juan David)
