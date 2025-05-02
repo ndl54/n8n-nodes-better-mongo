@@ -80,7 +80,7 @@ export class MongoDb implements INodeType {
 
 					if (!(databases as IDataObject[]).map((db) => db.name).includes(database)) {
 						throw new Error(`Database "${database}" does not exist`);
-					
+
 					}
 					await client.close();
 				} catch (error) {
@@ -391,7 +391,6 @@ export class MongoDb implements INodeType {
 
 					// Parse EJSON cho item trước khi update
 					const parsedItem = parseJsonToEjson(item);
-					console.log('DATA SENDING TO MONGO:', JSON.stringify(parsedItem, null, 2));
 					await mdb
 						.collection(this.getNodeParameter('collection', 0) as string)
 						.updateOne(filter, { $set: parsedItem }, updateOptions as UpdateOptions);
