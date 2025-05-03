@@ -1,6 +1,6 @@
 # Better MongoDB Node for n8n
 
-A drop-in replacement for the official n8n MongoDB node, offering enhanced BSON/EJSON support and improved data handling for advanced MongoDB workflows.9
+A drop-in replacement for the official n8n MongoDB node, offering enhanced BSON/EJSON support and improved data handling for advanced MongoDB workflows.
 
 ## Key Features
 
