@@ -15,12 +15,17 @@ A drop-in replacement for the official n8n MongoDB node, offering enhanced BSON/
   - Logs the exact data sent to MongoDB before insert/update/upsert for easy debugging and validation.
 - **Field Selection and Dot Notation:**
   - Supports selective field updates and dot notation for advanced update scenarios.
+- **Bulk Write Operations:**
+  - Optimized performance for batch operations using MongoDB's `bulkWrite()` API
+  - Supports bulk insert, update, findAndUpdate, and findAndReplace operations
+  - Automatically enables upsert for bulk operations to ensure data consistency
+  - Reduces network round trips and improves throughput for large datasets
 - **Backward Compatibility:**
   - Compatible with n8n workflows using the official MongoDB node, but with improved reliability and type safety.
 
 ## Recent Improvements & Optimizations
 
-- **Version 2.0 by NDL54**
+- **Version 2.0**
   - Refactored node name, versioning, and credential system for clarity and separation from the default node.
   - Improved handling of date fields: all dates are now automatically parsed as native Date objects before sending to MongoDB.
   - Arrays are always output as arrays (never `null`), ensuring no schema validation errors for array fields.
@@ -29,17 +34,25 @@ A drop-in replacement for the official n8n MongoDB node, offering enhanced BSON/
   - Optimized code structure and TypeScript typings for maintainability.
   - Bugfix: Prevented accidental overwriting of array fields with `null` or `undefined`.
 
+- **Version 2.1**
+  - Added Bulk Write support for improved performance in batch operations.
+
 ## Usage
 
 1. **Install the custom module into your n8n instance.**
 2. **Configure your MongoDB credentials** using the `betterMongoDB` credential type.
 3. **Add the Better MongoDB node** to your workflow.
 4. **Set operation and collection** as you would with the official node.
-5. **Input data:**
+5. **For bulk operations:**
+   - Enable "Use Bulk Write" option in the node settings
+   - Available for insert, update, findAndUpdate, and findAndReplace operations
+   - Automatically enables upsert for bulk operations
+   - Recommended for handling large datasets or batch processing
+6. **Input data:**
    - Date fields can be ISO strings, JS Date objects, or EJSON (`{"$date": ...}`) – all will be converted to Date.
    - ObjectId fields can be string or EJSON (`{"$oid": ...}`).
    - Arrays must be arrays (not null); empty arrays are accepted.
-6. **Check logs** for the exact data sent to MongoDB if you encounter validation errors.
+7. **Check logs** for the exact data sent to MongoDB if you encounter validation errors.
 
 ## Example
 
@@ -61,6 +74,7 @@ Will be sent to MongoDB as:
 
 - v1.0: N8N mongo node with same official mongodb node, but using BSON instead of JSON for parsing queries. It accepts $oid and $date and parse them to ObjectId and Date objects respectively.
 - v2.0: Major refactor, improved type handling, robust date/array processing, new credential type.
+- v2.1: Added Bulk Write support for improved performance in batch operations.
 
 ## Author
 - Juandl (Juan David)

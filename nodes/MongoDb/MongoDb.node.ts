@@ -236,94 +236,6 @@ export class MongoDb implements INodeType {
 			}
 		}
 
-		if (operation === 'findOneAndReplace') {
-			fallbackPairedItems = fallbackPairedItems ?? generatePairedItemData(items.length);
-			const fields = prepareFields(this.getNodeParameter('fields', 0) as string);
-			const useDotNotation = this.getNodeParameter('options.useDotNotation', 0, false) as boolean;
-			const dateFields = prepareFields(
-				this.getNodeParameter('options.dateFields', 0, '') as string,
-			);
-
-			const updateKey = ((this.getNodeParameter('updateKey', 0) as string) || '').trim();
-
-			const updateOptions = (this.getNodeParameter('upsert', 0) as boolean)
-				? { upsert: true }
-				: undefined;
-
-			const updateItems = prepareItems(items, fields, updateKey, useDotNotation, dateFields);
-
-			for (const item of updateItems) {
-				try {
-					const filter = { [updateKey]: item[updateKey] };
-					if (updateKey === '_id') {
-						filter[updateKey] = new ObjectId(item[updateKey] as string);
-						delete item._id;
-					}
-
-					// Parse EJSON cho item trước khi replace
-					const parsedItem = parseJsonToEjson(item);
-					await mdb
-						.collection(this.getNodeParameter('collection', 0) as string)
-						.findOneAndReplace(filter, parsedItem, updateOptions as FindOneAndReplaceOptions);
-				} catch (error) {
-					if (this.continueOnFail()) {
-						item.json = { error: (error as JsonObject).message };
-						continue;
-					}
-					throw error;
-				}
-			}
-
-			returnData = this.helpers.constructExecutionMetaData(
-				this.helpers.returnJsonArray(updateItems),
-				{ itemData: fallbackPairedItems },
-			);
-		}
-
-		if (operation === 'findOneAndUpdate') {
-			fallbackPairedItems = fallbackPairedItems ?? generatePairedItemData(items.length);
-			const fields = prepareFields(this.getNodeParameter('fields', 0) as string);
-			const useDotNotation = this.getNodeParameter('options.useDotNotation', 0, false) as boolean;
-			const dateFields = prepareFields(
-				this.getNodeParameter('options.dateFields', 0, '') as string,
-			);
-
-			const updateKey = ((this.getNodeParameter('updateKey', 0) as string) || '').trim();
-
-			const updateOptions = (this.getNodeParameter('upsert', 0) as boolean)
-				? { upsert: true }
-				: undefined;
-
-			const updateItems = prepareItems(items, fields, updateKey, useDotNotation, dateFields);
-
-			for (const item of updateItems) {
-				try {
-					const filter = { [updateKey]: item[updateKey] };
-					if (updateKey === '_id') {
-						filter[updateKey] = new ObjectId(item[updateKey] as string);
-						delete item._id;
-					}
-
-					// Parse EJSON cho item trước khi update
-					const parsedItem = parseJsonToEjson(item);
-					await mdb
-						.collection(this.getNodeParameter('collection', 0) as string)
-						.findOneAndUpdate(filter, { $set: parsedItem }, updateOptions as FindOneAndUpdateOptions);
-				} catch (error) {
-					if (this.continueOnFail()) {
-						item.json = { error: (error as JsonObject).message };
-						continue;
-					}
-					throw error;
-				}
-			}
-
-			returnData = this.helpers.constructExecutionMetaData(
-				this.helpers.returnJsonArray(updateItems),
-				{ itemData: fallbackPairedItems },
-			);
-		}
-
 		if (operation === 'insert') {
 			fallbackPairedItems = fallbackPairedItems ?? generatePairedItemData(items.length);
 			let responseData: IDataObject[] = [];
@@ -334,22 +246,41 @@ export class MongoDb implements INodeType {
 				const dateFields = prepareFields(
 					this.getNodeParameter('options.dateFields', 0, '') as string,
 				);
+				const useBulkWrite = this.getNodeParameter('options.useBulkWrite', 0, false) as boolean;
 
 				const insertItems = prepareItems(items, fields, '', useDotNotation, dateFields);
 
 				// Parse EJSON cho toàn bộ object đầu vào
 				const parsedInsertItems = insertItems.map(item => parseJsonToEjson(item));
 
-				const { insertedIds } = await mdb
-					.collection(this.getNodeParameter('collection', 0) as string)
-					.insertMany(parsedInsertItems);
+				if (useBulkWrite) {
+					const operations = parsedInsertItems.map(item => ({
+						insertOne: { document: item }
+					}));
 
-				// Add the id to the data
-				for (const i of Object.keys(insertedIds)) {
-					responseData.push({
-						...insertItems[parseInt(i, 10)],
-						id: insertedIds[parseInt(i, 10)] as unknown as string,
-					});
+					const result = await mdb
+						.collection(this.getNodeParameter('collection', 0) as string)
+						.bulkWrite(operations);
+
+					// Add the id to the data
+					for (let i = 0; i < insertItems.length; i++) {
+						responseData.push({
+							...insertItems[i],
+							id: result.insertedIds[i].toString(),
+						});
+					}
+				} else {
+					const { insertedIds } = await mdb
+						.collection(this.getNodeParameter('collection', 0) as string)
+						.insertMany(parsedInsertItems);
+
+					// Add the id to the data
+					for (const i of Object.keys(insertedIds)) {
+						responseData.push({
+							...insertItems[parseInt(i, 10)],
+							id: insertedIds[parseInt(i, 10)] as unknown as string,
+						});
+					}
 				}
 			} catch (error) {
 				if (this.continueOnFail()) {
@@ -372,34 +303,209 @@ export class MongoDb implements INodeType {
 			const dateFields = prepareFields(
 				this.getNodeParameter('options.dateFields', 0, '') as string,
 			);
+			const useBulkWrite = this.getNodeParameter('options.useBulkWrite', 0, false) as boolean;
 
 			const updateKey = ((this.getNodeParameter('updateKey', 0) as string) || '').trim();
 
-			const updateOptions = (this.getNodeParameter('upsert', 0) as boolean)
-				? { upsert: true }
-				: undefined;
-
 			const updateItems = prepareItems(items, fields, updateKey, useDotNotation, dateFields);
 
-			for (const item of updateItems) {
-				try {
+			if (useBulkWrite) {
+				const operations = updateItems.map(item => {
 					const filter = { [updateKey]: item[updateKey] };
 					if (updateKey === '_id') {
 						filter[updateKey] = new ObjectId(item[updateKey] as string);
 						delete item._id;
 					}
 
-					// Parse EJSON cho item trước khi update
 					const parsedItem = parseJsonToEjson(item);
+					return {
+						updateOne: {
+							filter,
+							update: { $set: parsedItem },
+							upsert: true
+						}
+					};
+				});
+
+				try {
 					await mdb
 						.collection(this.getNodeParameter('collection', 0) as string)
-						.updateOne(filter, { $set: parsedItem }, updateOptions as UpdateOptions);
+						.bulkWrite(operations);
 				} catch (error) {
 					if (this.continueOnFail()) {
-						item.json = { error: (error as JsonObject).message };
-						continue;
+						updateItems.forEach(item => {
+							item.json = { error: (error as JsonObject).message };
+						});
+					} else {
+						throw error;
 					}
-					throw error;
+				}
+			} else {
+				for (const item of updateItems) {
+					try {
+						const filter = { [updateKey]: item[updateKey] };
+						if (updateKey === '_id') {
+							filter[updateKey] = new ObjectId(item[updateKey] as string);
+							delete item._id;
+						}
+
+						const parsedItem = parseJsonToEjson(item);
+						await mdb
+							.collection(this.getNodeParameter('collection', 0) as string)
+							.updateOne(filter, { $set: parsedItem }, { upsert: true });
+					} catch (error) {
+						if (this.continueOnFail()) {
+							item.json = { error: (error as JsonObject).message };
+							continue;
+						}
+						throw error;
+					}
+				}
+			}
+
+			returnData = this.helpers.constructExecutionMetaData(
+				this.helpers.returnJsonArray(updateItems),
+				{ itemData: fallbackPairedItems },
+			);
+		}
+
+		if (operation === 'findOneAndUpdate') {
+			fallbackPairedItems = fallbackPairedItems ?? generatePairedItemData(items.length);
+			const fields = prepareFields(this.getNodeParameter('fields', 0) as string);
+			const useDotNotation = this.getNodeParameter('options.useDotNotation', 0, false) as boolean;
+			const dateFields = prepareFields(
+				this.getNodeParameter('options.dateFields', 0, '') as string,
+			);
+			const useBulkWrite = this.getNodeParameter('options.useBulkWrite', 0, false) as boolean;
+
+			const updateKey = ((this.getNodeParameter('updateKey', 0) as string) || '').trim();
+
+			const updateItems = prepareItems(items, fields, updateKey, useDotNotation, dateFields);
+
+			if (useBulkWrite) {
+				const operations = updateItems.map(item => {
+					const filter = { [updateKey]: item[updateKey] };
+					if (updateKey === '_id') {
+						filter[updateKey] = new ObjectId(item[updateKey] as string);
+						delete item._id;
+					}
+
+					const parsedItem = parseJsonToEjson(item);
+					return {
+						updateOne: {
+							filter,
+							update: { $set: parsedItem },
+							upsert: true
+						}
+					};
+				});
+
+				try {
+					await mdb
+						.collection(this.getNodeParameter('collection', 0) as string)
+						.bulkWrite(operations);
+				} catch (error) {
+					if (this.continueOnFail()) {
+						updateItems.forEach(item => {
+							item.json = { error: (error as JsonObject).message };
+						});
+					} else {
+						throw error;
+					}
+				}
+			} else {
+				for (const item of updateItems) {
+					try {
+						const filter = { [updateKey]: item[updateKey] };
+						if (updateKey === '_id') {
+							filter[updateKey] = new ObjectId(item[updateKey] as string);
+							delete item._id;
+						}
+
+						const parsedItem = parseJsonToEjson(item);
+						await mdb
+							.collection(this.getNodeParameter('collection', 0) as string)
+							.findOneAndUpdate(filter, { $set: parsedItem }, { upsert: true });
+					} catch (error) {
+						if (this.continueOnFail()) {
+							item.json = { error: (error as JsonObject).message };
+							continue;
+						}
+						throw error;
+					}
+				}
+			}
+
+			returnData = this.helpers.constructExecutionMetaData(
+				this.helpers.returnJsonArray(updateItems),
+				{ itemData: fallbackPairedItems },
+			);
+		}
+
+		if (operation === 'findOneAndReplace') {
+			fallbackPairedItems = fallbackPairedItems ?? generatePairedItemData(items.length);
+			const fields = prepareFields(this.getNodeParameter('fields', 0) as string);
+			const useDotNotation = this.getNodeParameter('options.useDotNotation', 0, false) as boolean;
+			const dateFields = prepareFields(
+				this.getNodeParameter('options.dateFields', 0, '') as string,
+			);
+			const useBulkWrite = this.getNodeParameter('options.useBulkWrite', 0, false) as boolean;
+
+			const updateKey = ((this.getNodeParameter('updateKey', 0) as string) || '').trim();
+
+			const updateItems = prepareItems(items, fields, updateKey, useDotNotation, dateFields);
+
+			if (useBulkWrite) {
+				const operations = updateItems.map(item => {
+					const filter = { [updateKey]: item[updateKey] };
+					if (updateKey === '_id') {
+						filter[updateKey] = new ObjectId(item[updateKey] as string);
+						delete item._id;
+					}
+
+					const parsedItem = parseJsonToEjson(item);
+					return {
+						replaceOne: {
+							filter,
+							replacement: parsedItem,
+							upsert: true
+						}
+					};
+				});
+
+				try {
+					await mdb
+						.collection(this.getNodeParameter('collection', 0) as string)
+						.bulkWrite(operations);
+				} catch (error) {
+					if (this.continueOnFail()) {
+						updateItems.forEach(item => {
+							item.json = { error: (error as JsonObject).message };
+						});
+					} else {
+						throw error;
+					}
+				}
+			} else {
+				for (const item of updateItems) {
+					try {
+						const filter = { [updateKey]: item[updateKey] };
+						if (updateKey === '_id') {
+							filter[updateKey] = new ObjectId(item[updateKey] as string);
+							delete item._id;
+						}
+
+						const parsedItem = parseJsonToEjson(item);
+						await mdb
+							.collection(this.getNodeParameter('collection', 0) as string)
+							.findOneAndReplace(filter, parsedItem, { upsert: true });
+					} catch (error) {
+						if (this.continueOnFail()) {
+							item.json = { error: (error as JsonObject).message };
+							continue;
+						}
+						throw error;
+					}
 				}
 			}
 

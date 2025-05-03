@@ -256,6 +256,13 @@ export const nodeProperties: INodeProperties[] = [
 		default: {},
 		options: [
 			{
+				displayName: 'Use Bulk Write',
+				name: 'useBulkWrite',
+				type: 'boolean',
+				default: false,
+				description: 'Whether to use MongoDB bulkWrite() for better performance when handling multiple documents',
+			},
+			{
 				displayName: 'Date Fields',
 				name: 'dateFields',
 				type: 'string',
