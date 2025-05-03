@@ -1,8 +1,8 @@
 import type {
+	Sort,
 	FindOneAndReplaceOptions,
 	FindOneAndUpdateOptions,
 	UpdateOptions,
-	Sort,
 } from 'mongodb';
 import { ObjectId } from 'mongodb';
 import type { Document } from 'mongodb';
@@ -304,6 +304,7 @@ export class MongoDb implements INodeType {
 				this.getNodeParameter('options.dateFields', 0, '') as string,
 			);
 			const useBulkWrite = this.getNodeParameter('options.useBulkWrite', 0, false) as boolean;
+			const upsert = this.getNodeParameter('upsert', 0, false) as boolean;
 
 			const updateKey = ((this.getNodeParameter('updateKey', 0) as string) || '').trim();
 
@@ -350,9 +351,22 @@ export class MongoDb implements INodeType {
 						}
 
 						const parsedItem = parseJsonToEjson(item);
-						await mdb
+						const updateOptions: UpdateOptions = {
+							upsert,
+						};
+
+						const result = await mdb
 							.collection(this.getNodeParameter('collection', 0) as string)
-							.updateOne(filter, { $set: parsedItem }, { upsert: true });
+							.updateOne(filter, { $set: parsedItem }, updateOptions);
+
+						if (result) {
+							item.json = {
+								matchedCount: result.matchedCount,
+								modifiedCount: result.modifiedCount,
+								upsertedCount: result.upsertedCount,
+								upsertedId: result.upsertedId?.toString()
+							};
+						}
 					} catch (error) {
 						if (this.continueOnFail()) {
 							item.json = { error: (error as JsonObject).message };
@@ -377,6 +391,7 @@ export class MongoDb implements INodeType {
 				this.getNodeParameter('options.dateFields', 0, '') as string,
 			);
 			const useBulkWrite = this.getNodeParameter('options.useBulkWrite', 0, false) as boolean;
+			const upsert = this.getNodeParameter('upsert', 0, false) as boolean;
 
 			const updateKey = ((this.getNodeParameter('updateKey', 0) as string) || '').trim();
 
@@ -423,9 +438,18 @@ export class MongoDb implements INodeType {
 						}
 
 						const parsedItem = parseJsonToEjson(item);
-						await mdb
+						const updateOptions: FindOneAndUpdateOptions = {
+							upsert,
+							returnDocument: 'after',
+						};
+
+						const result = await mdb
 							.collection(this.getNodeParameter('collection', 0) as string)
-							.findOneAndUpdate(filter, { $set: parsedItem }, { upsert: true });
+							.findOneAndUpdate(filter, { $set: parsedItem }, updateOptions);
+
+						if (result) {
+							item.json = result;
+						}
 					} catch (error) {
 						if (this.continueOnFail()) {
 							item.json = { error: (error as JsonObject).message };
@@ -450,6 +474,7 @@ export class MongoDb implements INodeType {
 				this.getNodeParameter('options.dateFields', 0, '') as string,
 			);
 			const useBulkWrite = this.getNodeParameter('options.useBulkWrite', 0, false) as boolean;
+			const upsert = this.getNodeParameter('upsert', 0, false) as boolean;
 
 			const updateKey = ((this.getNodeParameter('updateKey', 0) as string) || '').trim();
 
@@ -496,9 +521,18 @@ export class MongoDb implements INodeType {
 						}
 
 						const parsedItem = parseJsonToEjson(item);
-						await mdb
+						const updateOptions: FindOneAndReplaceOptions = {
+							upsert,
+							returnDocument: 'after',
+						};
+
+						const result = await mdb
 							.collection(this.getNodeParameter('collection', 0) as string)
-							.findOneAndReplace(filter, parsedItem, { upsert: true });
+							.findOneAndReplace(filter, parsedItem, updateOptions);
+
+						if (result) {
+							item.json = result;
+						}
 					} catch (error) {
 						if (this.continueOnFail()) {
 							item.json = { error: (error as JsonObject).message };
