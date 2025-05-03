@@ -244,6 +244,18 @@ export const nodeProperties: INodeProperties[] = [
 		description: 'Whether to perform an insert if no documents match the update key',
 	},
 	{
+		displayName: 'Use Bulk Write',
+		name: 'useBulkWrite',
+		type: 'boolean',
+		displayOptions: {
+			show: {
+				operation: ['update', 'insert', 'findOneAndReplace', 'findOneAndUpdate'],
+			},
+		},
+		default: false,
+		description: 'Whether to use MongoDB bulkWrite() for better performance when handling multiple documents',
+	},
+	{
 		displayName: 'Options',
 		name: 'options',
 		type: 'collection',
@@ -255,13 +267,6 @@ export const nodeProperties: INodeProperties[] = [
 		placeholder: 'Add option',
 		default: {},
 		options: [
-			{
-				displayName: 'Use Bulk Write',
-				name: 'useBulkWrite',
-				type: 'boolean',
-				default: false,
-				description: 'Whether to use MongoDB bulkWrite() for better performance when handling multiple documents',
-			},
 			{
 				displayName: 'Date Fields',
 				name: 'dateFields',

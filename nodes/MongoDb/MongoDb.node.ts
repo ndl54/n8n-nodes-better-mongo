@@ -246,7 +246,7 @@ export class MongoDb implements INodeType {
 				const dateFields = prepareFields(
 					this.getNodeParameter('options.dateFields', 0, '') as string,
 				);
-				const useBulkWrite = this.getNodeParameter('options.useBulkWrite', 0, false) as boolean;
+				const useBulkWrite = this.getNodeParameter('useBulkWrite', 0, false) as boolean;
 
 				const insertItems = prepareItems(items, fields, '', useDotNotation, dateFields);
 
@@ -303,7 +303,7 @@ export class MongoDb implements INodeType {
 			const dateFields = prepareFields(
 				this.getNodeParameter('options.dateFields', 0, '') as string,
 			);
-			const useBulkWrite = this.getNodeParameter('options.useBulkWrite', 0, false) as boolean;
+			const useBulkWrite = this.getNodeParameter('useBulkWrite', 0, false) as boolean;
 			const upsert = this.getNodeParameter('upsert', 0, false) as boolean;
 
 			const updateKey = ((this.getNodeParameter('updateKey', 0) as string) || '').trim();
@@ -390,7 +390,7 @@ export class MongoDb implements INodeType {
 			const dateFields = prepareFields(
 				this.getNodeParameter('options.dateFields', 0, '') as string,
 			);
-			const useBulkWrite = this.getNodeParameter('options.useBulkWrite', 0, false) as boolean;
+			const useBulkWrite = this.getNodeParameter('useBulkWrite', 0, false) as boolean;
 			const upsert = this.getNodeParameter('upsert', 0, false) as boolean;
 
 			const updateKey = ((this.getNodeParameter('updateKey', 0) as string) || '').trim();
@@ -473,7 +473,7 @@ export class MongoDb implements INodeType {
 			const dateFields = prepareFields(
 				this.getNodeParameter('options.dateFields', 0, '') as string,
 			);
-			const useBulkWrite = this.getNodeParameter('options.useBulkWrite', 0, false) as boolean;
+			const useBulkWrite = this.getNodeParameter('useBulkWrite', 0, false) as boolean;
 			const upsert = this.getNodeParameter('upsert', 0, false) as boolean;
 
 			const updateKey = ((this.getNodeParameter('updateKey', 0) as string) || '').trim();
