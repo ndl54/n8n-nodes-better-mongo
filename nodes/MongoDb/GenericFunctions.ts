@@ -86,7 +86,6 @@ export function prepareItems(
 	fields: string[],
 	updateKey = '',
 	useDotNotation = false,
-	dateFields: string[] = [],
 ) {
 	let data = items;
 
@@ -107,10 +106,6 @@ export function prepareItems(
 				fieldData = get(json, field, null);
 			} else {
 				fieldData = json[field] !== undefined ? json[field] : null;
-			}
-
-			if (fieldData && dateFields.includes(field)) {
-				fieldData = new Date(fieldData as string);
 			}
 
 			if (useDotNotation) {

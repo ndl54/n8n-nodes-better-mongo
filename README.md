@@ -49,22 +49,51 @@ A drop-in replacement for the official n8n MongoDB node, offering enhanced BSON/
    - Automatically enables upsert for bulk operations
    - Recommended for handling large datasets or batch processing
 6. **Input data:**
-   - Date fields can be ISO strings, JS Date objects, or EJSON (`{"$date": ...}`) – all will be converted to Date.
-   - ObjectId fields can be string or EJSON (`{"$oid": ...}`).
-   - Arrays must be arrays (not null); empty arrays are accepted.
-7. **Check logs** for the exact data sent to MongoDB if you encounter validation errors.
+   - The node accepts data in JSON format
+   - For date fields, the following formats are supported:
+     - ISO 8601 string format: `"2024-03-20T10:00:00Z"`
+     - EJSON format: `{ "$date": "2024-03-20T10:00:00Z" }`
+     - Timestamp in milliseconds: `1710921600000`
+     - Timestamp in seconds: `1710921600`
+   - For ObjectId fields, the following formats are supported:
+     - String format: `"65fb1234567890abcdef1234"`
+     - EJSON format: `{ "$oid": "65fb1234567890abcdef1234" }`
+   - The node will automatically convert these formats to their corresponding MongoDB types
+   - When querying dates, you can use MongoDB comparison operators:
+     ```json
+     {
+       "createdAt": {
+         "$gt": "2024-03-20T00:00:00Z",
+         "$lt": "2024-03-21T00:00:00Z"
+       }
+     }
+     ```
+   - Example input for different operations:
+     ```json
+     // Insert
+     {
+       "name": "Product A",
+       "price": 100000,
+       "createdAt": "2024-03-20T10:00:00Z",
+       "updatedAt": "2024-03-20T11:00:00Z"
+     }
 
-## Example
+     // Update
+     {
+       "id": "65fb1234567890abcdef1234",
+       "name": "Product A (Updated)",
+       "updatedAt": "2024-03-20T12:00:00Z"
+     }
 
-```json
-{
-  "id": 123,
-  "purchaseDate": "2022-11-04T11:15:00.000Z",
-  "payments": [
-    { "id": 1, "transDate": "2022-11-04T11:15:00.006Z" }
-  ]
-}
-```
+     // Find with date conditions
+     {
+       "createdAt": {
+         "$gt": "2024-03-20T00:00:00Z",
+         "$lt": "2024-03-21T00:00:00Z"
+       }
+     }
+     ```
+
 
 Will be sent to MongoDB as:
 - `purchaseDate` and `payments.transDate` as native Date objects

@@ -243,12 +243,9 @@ export class MongoDb implements INodeType {
 				// Prepare the data to insert and copy it to be returned
 				const fields = prepareFields(this.getNodeParameter('fields', 0) as string);
 				const useDotNotation = this.getNodeParameter('options.useDotNotation', 0, false) as boolean;
-				const dateFields = prepareFields(
-					this.getNodeParameter('options.dateFields', 0, '') as string,
-				);
 				const useBulkWrite = this.getNodeParameter('useBulkWrite', 0, false) as boolean;
 
-				const insertItems = prepareItems(items, fields, '', useDotNotation, dateFields);
+				const insertItems = prepareItems(items, fields, '', useDotNotation);
 
 				// Parse EJSON cho toàn bộ object đầu vào
 				const parsedInsertItems = insertItems.map(item => parseJsonToEjson(item));
@@ -300,15 +297,12 @@ export class MongoDb implements INodeType {
 			fallbackPairedItems = fallbackPairedItems ?? generatePairedItemData(items.length);
 			const fields = prepareFields(this.getNodeParameter('fields', 0) as string);
 			const useDotNotation = this.getNodeParameter('options.useDotNotation', 0, false) as boolean;
-			const dateFields = prepareFields(
-				this.getNodeParameter('options.dateFields', 0, '') as string,
-			);
 			const useBulkWrite = this.getNodeParameter('useBulkWrite', 0, false) as boolean;
 			const upsert = this.getNodeParameter('upsert', 0, false) as boolean;
 
 			const updateKey = ((this.getNodeParameter('updateKey', 0) as string) || '').trim();
 
-			const updateItems = prepareItems(items, fields, updateKey, useDotNotation, dateFields);
+			const updateItems = prepareItems(items, fields, updateKey, useDotNotation);
 
 			if (useBulkWrite) {
 				const operations = updateItems.map(item => {
@@ -387,15 +381,12 @@ export class MongoDb implements INodeType {
 			fallbackPairedItems = fallbackPairedItems ?? generatePairedItemData(items.length);
 			const fields = prepareFields(this.getNodeParameter('fields', 0) as string);
 			const useDotNotation = this.getNodeParameter('options.useDotNotation', 0, false) as boolean;
-			const dateFields = prepareFields(
-				this.getNodeParameter('options.dateFields', 0, '') as string,
-			);
 			const useBulkWrite = this.getNodeParameter('useBulkWrite', 0, false) as boolean;
 			const upsert = this.getNodeParameter('upsert', 0, false) as boolean;
 
 			const updateKey = ((this.getNodeParameter('updateKey', 0) as string) || '').trim();
 
-			const updateItems = prepareItems(items, fields, updateKey, useDotNotation, dateFields);
+			const updateItems = prepareItems(items, fields, updateKey, useDotNotation);
 
 			if (useBulkWrite) {
 				const operations = updateItems.map(item => {
@@ -470,15 +461,12 @@ export class MongoDb implements INodeType {
 			fallbackPairedItems = fallbackPairedItems ?? generatePairedItemData(items.length);
 			const fields = prepareFields(this.getNodeParameter('fields', 0) as string);
 			const useDotNotation = this.getNodeParameter('options.useDotNotation', 0, false) as boolean;
-			const dateFields = prepareFields(
-				this.getNodeParameter('options.dateFields', 0, '') as string,
-			);
 			const useBulkWrite = this.getNodeParameter('useBulkWrite', 0, false) as boolean;
 			const upsert = this.getNodeParameter('upsert', 0, false) as boolean;
 
 			const updateKey = ((this.getNodeParameter('updateKey', 0) as string) || '').trim();
 
-			const updateItems = prepareItems(items, fields, updateKey, useDotNotation, dateFields);
+			const updateItems = prepareItems(items, fields, updateKey, useDotNotation);
 
 			if (useBulkWrite) {
 				const operations = updateItems.map(item => {
